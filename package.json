@@ -1,0 +1,13 @@
+{
+  "name": "technovas-2026-course-03-booking-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TechNovas 2026 course 3 demo: in-memory Booking API on Express",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
