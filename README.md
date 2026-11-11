@@ -59,3 +59,15 @@ Create-booking body, as on the slide:
 ```
 
 Seed: `svc_001`, `svc_002`.
+## Exercise answers
+POST   http://localhost:3000/api/v1/services/svc_001/reviews
+ GET   http://localhost:3000/api/v1/services/svc_001/reviews
+ GET   http://localhost:3000/api/v1/services/svc_001/reviews
+ PUT   http://localhost:3000/api/v1/reviews/rev_001
+ PATCH http://localhost:3000/api/v1/reviews/rev_001
+DELETE http://localhost:3000/api/v1/reviews/rev_001
+
+
+1. The review list is under /services/:serviceId/reviews because those reviews belong to a specific service. A single review has its own ID, so it can be accessed directly at /reviews/:id.
+2. Successful creation: 201; missing rating: 400; service not found: 404.
+3. Before running this API in production, I would persist the data, verify who submitted each review, and limit the number of reviews per service.
