@@ -60,12 +60,13 @@ Create-booking body, as on the slide:
 
 Seed: `svc_001`, `svc_002`.
 ## Exercise answers
-POST   http://localhost:3000/api/v1/services/svc_001/reviews
- GET   http://localhost:3000/api/v1/services/svc_001/reviews
- GET   http://localhost:3000/api/v1/services/svc_001/reviews
- PUT   http://localhost:3000/api/v1/reviews/rev_001
- PATCH http://localhost:3000/api/v1/reviews/rev_001
-DELETE http://localhost:3000/api/v1/reviews/rev_001
+Method	Path	Body	Success	Failure
+GET	/services/:serviceId/reviews	none	200, array of reviews	404 service not found
+POST	/services/:serviceId/reviews	authorName, rating, optional comment	201, new review	400 missing field or rating outside 1–5; 404 service not found
+GET	/reviews/:id	none	200, review	404 review not found
+PUT	/reviews/:id	authorName, rating, comment (all required)	200, updated review	400 missing or invalid; 404 review not found
+PATCH	/reviews/:id	at least one of the three fields	200, updated review	400 empty or invalid; 404 review not found
+DELETE	/reviews/:id	none	204, no body	404 review not found
 
 
 1. The review list is under /services/:serviceId/reviews because those reviews belong to a specific service. A single review has its own ID, so it can be accessed directly at /reviews/:id.
