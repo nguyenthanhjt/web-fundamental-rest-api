@@ -187,7 +187,7 @@ app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
     return;
   }
 
-  if (
+    if (
     typeof body.rating !== "number" ||
     body.rating < 1 ||
     body.rating > 5
@@ -195,6 +195,11 @@ app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
     res.status(400).json({
       message: "rating must be a number from 1 to 5",
     });
+    return;
+  }
+
+  if (Object.hasOwn(body, "comment") && typeof body.comment !== "string") {
+    res.status(400).json({ message: "comment must be a string" });
     return;
   }
 
