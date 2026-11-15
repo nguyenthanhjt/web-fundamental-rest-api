@@ -131,6 +131,120 @@ app.delete("/api/v1/bookings/:id", (req, res) => {
   res.status(204).send();
 });
 
+const reviews = [];
+let nextReviewsNumber = 1;
+
+const reviewsRequiredFields = ["authorName", "rating"]
+const reviewOptionalFields = ["comment"]
+
+function findReviews(id) {
+  return reviews.find((r) => r.id === id);
+}
+
+app.get("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const service = findService(req.params.serviceId);
+  if (!service) {
+    res.status(404).json({ message: "service not found" });
+    return;
+  }
+  res.status(200).json(reviews.filter((r) => r.serviceId === req.params.serviceId));
+    
+});
+
+app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const service = findService(req.params.serviceId);
+  if (!service) {
+    res.status(404).json({ message: "service not found" });
+    return;
+  }
+  const body = req.body || {}
+  const missing = reviewsRequiredFields.filter((field) => !body[field])
+  if (missing.length > 0) {
+    res.status(400).json({message: missing.join(", ") + " are required"})
+    return
+  }
+  if (typeof(body.rating) !== "number" || body.rating < 1 || body.rating > 5) {
+    res.status(400).json({message: "rating must be a number in range 1 to 5"})
+    return
+  }
+  const review = {
+    id: "rvw_" + String(nextReviewsNumber).padStart(3, "0"),
+    serviceId: req.params.serviceId,
+    authorName: body.authorName,
+    rating: body.rating,
+    comment: body["comment"] ? body.comment : ""
+  }
+  nextReviewsNumber++;
+  reviews.push(review)
+  res.status(201).json(review);
+    
+});
+
+app.get("/api/v1/reviews/:id", (req, res) => {
+  const review = findReviews(req.params.id);
+  if (!review) {
+    res.status(404).json({message: "review not found"})
+    return;
+  }
+  return res.status(200).json(review);
+});
+
+app.put("/api/v1/reviews/:id", (req, res) => {
+  const review = findReviews(req.params.id);
+  if (!review) {
+    res.status(404).json({message: "review not found"})
+    return;
+  }
+  const body = req.body || {}
+  const missing = reviewsRequiredFields.filter((field) => !body[field])
+  if (missing.length > 0) {
+    res.status(400).json({message: missing.join(", ") + " are required"})
+    return
+  }
+  if (typeof(body.rating) !== "number" || body.rating < 1 || body.rating > 5) {
+    res.status(400).json({message: "rating must be a number in range 1 to 5"})
+    return
+  }
+  review.authorName = body.authorName;
+  review.rating = body.rating;
+  review.comment = body.comment ? body.comment : "";
+  res.status(200).json(review);
+});
+
+app.patch("/api/v1/reviews/:id", (req, res) => {
+  const review = findReviews(req.params.id);
+  if (!review) {
+    res.status(404).json({message: "review not found"});
+    return;
+  }
+  const body = req.body || {}
+
+  const fields = reviewsRequiredFields.filter((field) => body[field]).concat(reviewOptionalFields.filter((field) => body[field]));
+  if (fields.length === 0) {
+    res.status(400).json({message: "empty body"})
+    return;
+  }
+  if (body["rating"] && (typeof(body.rating) !== "number" || body.rating < 1 || body.rating > 5)) {
+    res.status(400).json({message: "rating must be a number in range 1 to 5"})
+    return;
+  }
+  fields.forEach((field) => {
+    review[field] = body[field];
+  });
+  res.status(200).json(review);
+});
+
+app.delete("/api/v1/reviews/:id", (req, res) => {
+  const review = findReviews(req.params.id);
+  if (!review) {
+    res.status(404).json({message: "review not found"})
+    return;
+  }
+  const index = reviews.findIndex((value) => value.id === review.id);
+  reviews.splice(index, 1);
+  res.status(204).json(review);
+});
+
 const port = 3000;
 app.listen(port, () => {
   console.log("Booking demo listening on http://localhost:" + port);
