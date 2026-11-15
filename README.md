@@ -1,90 +1,76 @@
-# Course 3 demo — Booking API (Express, in-memory)
+# Booking API — NestJS
 
-There is no database. Restarting the process drops every booking. There is no login yet: DELETE does not check permission.
+An in-memory REST API built with NestJS, TypeScript, DTO validation, and separate controllers, services, and modules. Data resets when the process stops. There is no authentication; the DELETE endpoints do not check permissions.
 
-Paths match the Booking App slides, prefix `/api/v1`. PUT is extra compared with the Proposed Endpoints table, so the CRUD slide has both replace and partial update.
+## Requirements
 
-Student exercise (new resource, do not rebuild these routes): [EXERCISE.md](EXERCISE.md) · [EXERCISE.en.md](EXERCISE.en.md).
+- Node.js 20 or newer
+- npm
 
-## Run
+## Install and run
 
 ```bash
-npm install --registry https://registry.npmjs.org
+npm install
+npm run start:dev
+```
+
+The API listens at `http://localhost:3000/api/v1`. To create a production build and run it:
+
+```bash
+npm run build
 npm start
 ```
 
-If `npm install` returns 401, this machine is pointed at an internal registry. The command above installs `express` from the public registry.
+Set `PORT` to change the listening port.
 
-Server: `http://localhost:3000`
+## API routes
 
-## Try the API
+All request and response bodies use JSON. Errors have the shape `{ "message": "..." }`.
 
-Run these from the `demo` folder. `bkg_001` is the id the server returns from POST. Change the id if you create more than one booking.
+| Method | Path | Success | Errors |
+|--------|------|---------|--------|
+| GET | `/api/v1/services` | `200` services array | — |
+| GET | `/api/v1/services/:id` | `200` service | `404` service not found |
+| GET | `/api/v1/bookings` | `200` bookings array | — |
+| GET | `/api/v1/bookings/:id` | `200` booking | `404` booking not found |
+| POST | `/api/v1/bookings` | `201` booking; server assigns `id` and `PENDING` status | `400` invalid body, `404` service not found |
+| PUT | `/api/v1/bookings/:id` | `200` replaced booking | `400` invalid body, `404` booking or service not found |
+| PATCH | `/api/v1/bookings/:id` | `200` updated booking | `400` empty or invalid body, `404` booking or service not found |
+| DELETE | `/api/v1/bookings/:id` | `204`, no body | `404` booking not found |
+| GET | `/api/v1/services/:serviceId/reviews` | `200` reviews array | `404` service not found |
+| POST | `/api/v1/services/:serviceId/reviews` | `201` review; server assigns `id` and `serviceId` | `400` invalid body/rating, `404` service not found |
+| GET | `/api/v1/reviews/:id` | `200` review | `404` review not found |
+| PUT | `/api/v1/reviews/:id` | `200` replaced review | `400` invalid body/rating, `404` review not found |
+| PATCH | `/api/v1/reviews/:id` | `200` updated review | `400` empty or invalid body/rating, `404` review not found |
+| DELETE | `/api/v1/reviews/:id` | `204`, no body | `404` review not found |
+
+Booking creation requires `serviceId`, `date`, `timeSlot`, and `customerName`. Review creation requires `authorName` and a numeric `rating` from 1 to 5; `comment` is optional and may be empty. Review PUT requires `authorName`, `rating`, and `comment`; PATCH updates only supplied fields. Seed services: `svc_001` and `svc_002`.
+
+## Example requests
+
+Run these commands from the repository root. The review JSON fixtures are in `requests/`.
 
 ```bash
 curl.exe http://localhost:3000/api/v1/services
 curl.exe http://localhost:3000/api/v1/services/svc_001
-curl.exe http://localhost:3000/api/v1/services/khong-co
 curl.exe -X POST http://localhost:3000/api/v1/bookings -H "Content-Type: application/json" --data-binary "@requests/booking-create.json"
 curl.exe http://localhost:3000/api/v1/bookings
-curl.exe http://localhost:3000/api/v1/bookings/bkg_001
-curl.exe -X PUT http://localhost:3000/api/v1/bookings/bkg_001 -H "Content-Type: application/json" --data-binary "@requests/booking-put.json"
-curl.exe -X PATCH http://localhost:3000/api/v1/bookings/bkg_001 -H "Content-Type: application/json" --data-binary "@requests/booking-patch.json"
-curl.exe -X POST http://localhost:3000/api/v1/bookings -H "Content-Type: application/json" --data-binary "@requests/empty.json"
-curl.exe -X DELETE http://localhost:3000/api/v1/bookings/bkg_001
+curl.exe -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe http://localhost:3000/api/v1/services/svc_001/reviews
+curl.exe http://localhost:3000/api/v1/reviews/rvw_001
+curl.exe -X PUT http://localhost:3000/api/v1/reviews/rvw_001 -H "Content-Type: application/json" --data-binary "@requests/review-put.json"
+curl.exe -X PATCH http://localhost:3000/api/v1/reviews/rvw_001 -H "Content-Type: application/json" --data-binary "@requests/review-patch.json"
+curl.exe -X DELETE http://localhost:3000/api/v1/reviews/rvw_001
 ```
 
-## Routes
+## Project structure
 
-| Method | Path | Success | Error |
-|--------|------|---------|-------|
-| GET | `/api/v1/services` | 200 array | |
-| GET | `/api/v1/services/:id` | 200 one service | 404 |
-| POST | `/api/v1/bookings` | 201 booking; server sets `id` and `status: PENDING` | 400 missing field, 404 unknown service |
-| GET | `/api/v1/bookings` | 200 array | |
-| GET | `/api/v1/bookings/:id` | 200 one booking | 404 |
-| PUT | `/api/v1/bookings/:id` | 200; replaces `serviceId`, `date`, `timeSlot`, and `customerName` | 400 missing field, 404 booking or service |
-| PATCH | `/api/v1/bookings/:id` | 200; only the fields sent | 400 empty body, 404 |
-| DELETE | `/api/v1/bookings/:id` | 204 no body | 404 |
-
-Create-booking body, as on the slide:
-
-```json
-{
-  "serviceId": "svc_001",
-  "date": "2026-11-15",
-  "timeSlot": "10:00",
-  "customerName": "Alex Nguyen"
-}
+```text
+src/
+  bookings/    bookings controller, service, module, model, and DTOs
+  reviews/     review controllers, service, module, model, and DTOs
+  services/    services controller, service, module, and model
+  common/      shared HTTP exception filter
+  app.module.ts
+  main.ts
 ```
-
-Seed: `svc_001`, `svc_002`.
-
-# Homework
-
-## Review validation commands run
-
-These six `curl.exe` commands were run against the live server while validating the new review resource:
-
-```bash
-curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/services/svc_001/reviews
-curl.exe -sS -w "\nHTTP:%{http_code}\n" -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
-curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/reviews/rvw_001
-curl.exe -sS -w "\nHTTP:%{http_code}\n" -X PATCH http://localhost:3000/api/v1/reviews/rvw_001 -H "Content-Type: application/json" --data-binary "@requests/review-patch.json"
-curl.exe -sS -w "\nHTTP:%{http_code}\n" -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-missing-rating.json"
-curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/reviews/rvw_999
-```
-
-## Answer part C
-
-1. Why does the review list live at `/services/:serviceId/reviews`, while one review lives at `/reviews/:id`?
-
-   The review list is a collection scoped to a specific service, so the path must include the parent resource id to identify which service the reviews belong to. A single review is identified by its own unique id, so it lives under `/reviews/:id`.
-
-2. Which status do you return for a successful create, a missing `rating`, and a service that does not exist?
-
-   A successful create returns `201 Created`. A missing `rating` returns `400 Bad Request`. A service that does not exist returns `404 Not Found`.
-
-3. What would you add before this API runs for real users?
-
-   I would add persistence so the data survives after the process stops. In a real API, reviews should not disappear when the server restarts, and keeping them in a database or file store is the most important next step.
