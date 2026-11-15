@@ -11,7 +11,11 @@ const services = [
 const bookings = [];
 let nextBookingNumber = 1;
 
+const reviews = [];
+let nextReviewNumber = 1;
+
 const writableFields = ["serviceId", "date", "timeSlot", "customerName"];
+const reviewWritableFields = ["authorName", "rating", "comment"];
 
 function findService(id) {
   return services.find((item) => item.id === id);
@@ -19,6 +23,10 @@ function findService(id) {
 
 function findBooking(id) {
   return bookings.find((item) => item.id === id);
+}
+
+function findReview(id) {
+  return reviews.find((item) => item.id === id);
 }
 
 app.get("/api/v1/services", (_req, res) => {
@@ -128,6 +136,128 @@ app.delete("/api/v1/bookings/:id", (req, res) => {
     return;
   }
   bookings.splice(index, 1);
+  res.status(204).send();
+});
+
+app.get("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const service = findService(req.params.serviceId);
+  if (!service) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  const matchingReviews = reviews.filter((item) => item.serviceId === service.id);
+  res.status(200).json(matchingReviews);
+});
+
+app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const service = findService(req.params.serviceId);
+  if (!service) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  const body = req.body || {};
+  const missing = ["authorName", "rating"].filter((field) => {
+    return body[field] === undefined || body[field] === null || body[field] === "";
+  });
+
+  if (missing.length > 0) {
+    res.status(400).json({ message: missing.join(", ") + " are required" });
+    return;
+  }
+
+  if (typeof body.rating !== "number" || Number.isNaN(body.rating) || body.rating < 1 || body.rating > 5) {
+    res.status(400).json({ message: "rating must be between 1 and 5" });
+    return;
+  }
+
+  const review = {
+    id: "rvw_" + String(nextReviewNumber).padStart(3, "0"),
+    serviceId: service.id,
+    authorName: body.authorName,
+    rating: body.rating,
+    comment: body.comment || "",
+  };
+
+  nextReviewNumber += 1;
+  reviews.push(review);
+  res.status(201).json(review);
+});
+
+app.get("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+  res.status(200).json(review);
+});
+
+app.put("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  const body = req.body || {};
+  const missing = ["authorName", "rating", "comment"].filter((field) => {
+    if (field === "comment") {
+      return body[field] === undefined || body[field] === null;
+    }
+    return body[field] === undefined || body[field] === null || body[field] === "";
+  });
+
+  if (missing.length > 0) {
+    res.status(400).json({ message: missing.join(", ") + " are required" });
+    return;
+  }
+
+  if (typeof body.rating !== "number" || Number.isNaN(body.rating) || body.rating < 1 || body.rating > 5) {
+    res.status(400).json({ message: "rating must be between 1 and 5" });
+    return;
+  }
+
+  review.authorName = body.authorName;
+  review.rating = body.rating;
+  review.comment = body.comment;
+  res.status(200).json(review);
+});
+
+app.patch("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  const body = req.body || {};
+  const fields = reviewWritableFields.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+
+  if (fields.length === 0) {
+    res.status(400).json({ message: "At least one of authorName, rating, comment is required" });
+    return;
+  }
+
+  if (body.rating !== undefined && (typeof body.rating !== "number" || Number.isNaN(body.rating) || body.rating < 1 || body.rating > 5)) {
+    res.status(400).json({ message: "rating must be between 1 and 5" });
+    return;
+  }
+
+  fields.forEach((field) => {
+    review[field] = body[field];
+  });
+  res.status(200).json(review);
+});
+
+app.delete("/api/v1/reviews/:id", (req, res) => {
+  const index = reviews.findIndex((item) => item.id === req.params.id);
+  if (index === -1) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+  reviews.splice(index, 1);
   res.status(204).send();
 });
 
