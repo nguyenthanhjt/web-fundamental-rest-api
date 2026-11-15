@@ -32,6 +32,15 @@ curl.exe -X PUT http://localhost:3000/api/v1/bookings/bkg_001 -H "Content-Type: 
 curl.exe -X PATCH http://localhost:3000/api/v1/bookings/bkg_001 -H "Content-Type: application/json" --data-binary "@requests/booking-patch.json"
 curl.exe -X POST http://localhost:3000/api/v1/bookings -H "Content-Type: application/json" --data-binary "@requests/empty.json"
 curl.exe -X DELETE http://localhost:3000/api/v1/bookings/bkg_001
+
+curl.exe http://localhost:3000/api/v1/services/svc_001/reviews
+curl.exe -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe http://localhost:3000/api/v1/reviews/rv_002
+curl.exe -X PUT http://localhost:3000/api/v1/reviews/rv_002 -H "Content-Type: application/json" --data-binary "@requests/review-put.json"
+curl.exe -X PATCH http://localhost:3000/api/v1/reviews/rv_002 -H "Content-Type: application/json" --data-binary "@requests/review-patch.json"
+curl.exe -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/empty.json"
+curl.exe http://localhost:3000/api/v1/services/khong-co/reviews
+curl.exe -X DELETE http://localhost:3000/api/v1/reviews/rv_002
 ```
 
 ## Routes

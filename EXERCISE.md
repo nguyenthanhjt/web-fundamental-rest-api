@@ -54,5 +54,24 @@ Your README must list six `curl` commands you actually ran, including one `400` 
 Answer briefly:
 
 1. Why does the review list live at `/services/:serviceId/reviews`, while one review lives at `/reviews/:id`?
+
+    Answer:
+    - It is based on API design principle: keep the resource path as a noun, use path parameters to identify the resource, ....
+      - First api (`/services/:serviceId/reviews`) is to get a list of reviews which comment a particular service
+      - The latter api (`/reviews/:id`) response is getting detailed review information
+
 2. Which status do you return for a successful create, a missing `rating`, and a service that does not exist?
+
+    Answer:
+    - For successful create: return 201
+    - For missing `rating`: return 400
+    - For a service that does not exist: return 404
+
 3. What would you add before this API runs for real users? Pick from these, no code required: keep data after the process stops, check who sent the review, limit how many reviews one service can have.
+
+    Answer: I pick all three options
+    1. I would add feature "keep data after the process stops" first. The system needs a backup solution which prevents data loss when the process stops.
+
+    2. "check who sent the review" is also important. It is necessary to check the user identity to prevent spam and malicious reviews.
+
+    3. I also choose "limit how many reviews one service can have". This prevents spam problems -> Reduce system resources, improve user experience, and maintain the quality of reviews.

@@ -8,6 +8,11 @@ const services = [
   { id: "svc_002", name: "Gym theo buổi", capacity: 20, price: 80000 },
 ];
 
+const reviews = [
+  { id: "rv_001", serviceId: "svc_001", authorName: "Hung", rating: 5, comment: "Hay qua" }
+];
+let nextReviewNumber = reviews.length + 1;
+
 const bookings = [];
 let nextBookingNumber = 1;
 
@@ -128,6 +133,160 @@ app.delete("/api/v1/bookings/:id", (req, res) => {
     return;
   }
   bookings.splice(index, 1);
+  res.status(204).send();
+});
+
+function findReview(id) {
+  return reviews.find((item) => item.id === id);
+}
+
+function isValidAuthorName(value) {
+  return typeof value === "string"
+    && value.trim() !== "";
+}
+
+function isValidRating(value) {
+  return typeof value === "number"
+    && Number.isFinite(value)
+    && value >= 1
+    && value <= 5;
+}
+
+function validateReview(body, { requireAll }) {
+  const { authorName, rating, comment } = body;
+
+  if (requireAll) {
+    if (authorName === undefined || rating === undefined || comment === undefined) {
+      return "Missing required fields (authorName, rating, comment)";
+    }
+  } else if (authorName === undefined || rating === undefined) {
+    return "Missing required fields (authorName, rating)";
+  }
+
+  if (!isValidAuthorName(authorName)) {
+    return "authorName must be a non-empty string";
+  }
+  if (!isValidRating(rating)) {
+    return "Invalid rating (1-5)";
+  }
+  if (comment !== undefined && typeof comment !== "string") {
+    return "comment must be a string";
+  }
+  return null;
+}
+
+// 1
+app.get("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const { serviceId } = req.params;
+  if (!findService(serviceId)) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  const serviceReviews = reviews.filter((r) => r.serviceId === serviceId);
+  res.status(200).json(serviceReviews);
+});
+
+// 2
+app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
+  const body = req.body || {};
+  const error = validateReview(body, { requireAll: false });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  const { serviceId } = req.params;
+  if (!findService(serviceId)) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  const review = {
+    id: "rv_" + String(nextReviewNumber++).padStart(3, "0"),
+    serviceId,
+    authorName: body.authorName.trim(),
+    rating: body.rating,
+    comment: body.comment ?? "",
+  };
+  reviews.push(review);
+  res.status(201).json(review);
+});
+
+// 3
+app.get("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+  res.status(200).json(review);
+});
+
+// 4
+app.put("/api/v1/reviews/:id", (req, res) => {
+  const body = req.body || {};
+  const error = validateReview(body, { requireAll: true });
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  review.authorName = body.authorName.trim();
+  review.rating = body.rating;
+  review.comment = body.comment;
+  res.status(200).json(review);
+});
+
+// 5
+app.patch("/api/v1/reviews/:id", (req, res) => {
+  const body = req.body || {};
+  const { authorName, rating, comment } = body;
+
+  if (authorName === undefined && rating === undefined && comment === undefined) {
+    res.status(400).json({ message: "Missing required fields (authorName or rating or comment)" });
+    return;
+  }
+  if (authorName !== undefined && !isValidAuthorName(authorName)) {
+    res.status(400).json({ message: "authorName must be a non-empty string" });
+    return;
+  }
+  if (rating !== undefined && !isValidRating(rating)) {
+    res.status(400).json({ message: "Invalid rating (1-5)" });
+    return;
+  }
+  if (comment !== undefined && typeof comment !== "string") {
+    res.status(400).json({ message: "comment must be a string" });
+    return;
+  }
+
+  const review = findReview(req.params.id);
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  if (authorName !== undefined) review.authorName = authorName.trim();
+  if (rating !== undefined) review.rating = rating;
+  if (comment !== undefined) review.comment = comment;
+  res.status(200).json(review);
+});
+
+// 6
+app.delete("/api/v1/reviews/:id", (req, res) => {
+  const index = reviews.findIndex((r) => r.id === req.params.id);
+  if (index === -1) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  reviews.splice(index, 1);
   res.status(204).send();
 });
 
