@@ -277,14 +277,8 @@ app.patch("/api/v1/reviews/:id", (req, res) => {
   }
 
   if (tmpReview.comment !== undefined) {
-    if (tmpReview.comment === null || tmpReview.comment === "") {
-      return res.status(400).json({ message: "comment must not be null or empty" });
-    }
     if (typeof tmpReview.comment !== "string") {
       return res.status(400).json({ message: "comment must be a string" });
-    }
-    if (tmpReview.comment.trim() === "") {
-      return res.status(400).json({ message: "comment must not be blank" });
     }
     updatedReview.comment = tmpReview.comment;
   }
@@ -304,7 +298,11 @@ app.delete("/api/v1/reviews/:id", (req, res) => {
   return res.status(204).send();
 });
 
-const port = 3000;
-app.listen(port, () => {
-  console.log("Booking demo listening on http://localhost:" + port);
-});
+if (require.main === module) {
+  const port = 3000;
+  app.listen(port, () => {
+    console.log("Booking demo listening on http://localhost:" + port);
+  });
+}
+
+module.exports = app;

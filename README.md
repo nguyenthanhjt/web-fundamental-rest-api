@@ -99,7 +99,11 @@ Ví dụ body PATCH chỉ sửa rating:
 }
 ```
 
-Lưu ý về code hiện tại: PATCH đang từ chối `comment: ""`, khác với đặc tả của đề bài cho phép comment rỗng.
+PATCH chấp nhận `comment: ""` để xóa nội dung nhận xét và chấp nhận chuỗi chỉ chứa
+khoảng trắng. Các giá trị không phải chuỗi vẫn bị từ chối; trường không gửi giữ nguyên.
+
+Chạy `npm test` để kiểm tra các trường hợp này, bao gồm việc request không hợp lệ
+không làm thay đổi dữ liệu review.
 
 ### Tính idempotent
 

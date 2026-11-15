@@ -5,7 +5,8 @@
   "description": "TechNovas 2026 course 3 demo: in-memory Booking API on Express",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "express": "^4.21.2"
