@@ -1,4 +1,4 @@
-# Course 3 demo — Booking API (Express, in-memory)
+# Course 4 demo — Booking API (NEST, in-memory)
 
 There is no database. Restarting the process drops every booking. There is no login yet: DELETE does not check permission.
 
@@ -9,11 +9,9 @@ Student exercise (new resource, do not rebuild these routes): [EXERCISE.md](EXER
 ## Run
 
 ```bash
-npm install --registry https://registry.npmjs.org
-npm start
+pnpm install
+pnpm start
 ```
-
-If `npm install` returns 401, this machine is pointed at an internal registry. The command above installs `express` from the public registry.
 
 Server: `http://localhost:3000`
 
