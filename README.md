@@ -59,3 +59,32 @@ Create-booking body, as on the slide:
 ```
 
 Seed: `svc_001`, `svc_002`.
+
+# Homework
+
+## Review validation commands run
+
+These six `curl.exe` commands were run against the live server while validating the new review resource:
+
+```bash
+curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/services/svc_001/reviews
+curl.exe -sS -w "\nHTTP:%{http_code}\n" -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/reviews/rvw_001
+curl.exe -sS -w "\nHTTP:%{http_code}\n" -X PATCH http://localhost:3000/api/v1/reviews/rvw_001 -H "Content-Type: application/json" --data-binary "@requests/review-patch.json"
+curl.exe -sS -w "\nHTTP:%{http_code}\n" -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-missing-rating.json"
+curl.exe -sS -w "\nHTTP:%{http_code}\n" http://localhost:3000/api/v1/reviews/rvw_999
+```
+
+## Answer part C
+
+1. Why does the review list live at `/services/:serviceId/reviews`, while one review lives at `/reviews/:id`?
+
+   The review list is a collection scoped to a specific service, so the path must include the parent resource id to identify which service the reviews belong to. A single review is identified by its own unique id, so it lives under `/reviews/:id`.
+
+2. Which status do you return for a successful create, a missing `rating`, and a service that does not exist?
+
+   A successful create returns `201 Created`. A missing `rating` returns `400 Bad Request`. A service that does not exist returns `404 Not Found`.
+
+3. What would you add before this API runs for real users?
+
+   I would add persistence so the data survives after the process stops. In a real API, reviews should not disappear when the server restarts, and keeping them in a database or file store is the most important next step.
