@@ -1,10 +1,14 @@
-# Course 4 demo — Booking API (NEST, in-memory)
-
-There is no database. Restarting the process drops every booking. There is no login yet: DELETE does not check permission.
+# Course 6  — Booking API (NEST, Database)
 
 Paths match the Booking App slides, prefix `/api/v1`. PUT is extra compared with the Proposed Endpoints table, so the CRUD slide has both replace and partial update.
 
 Student exercise (new resource, do not rebuild these routes): [EXERCISE.md](EXERCISE.md) · [EXERCISE.en.md](EXERCISE.en.md).
+
+## Start the database
+
+```bash
+docker run --name course-6-db -e POSTGRES_USER=course-6 -e POSTGRES_PASSWORD=course-6 -e POSTGRES_DB=course-6 -p 5432:5432 -d postgres:16-alpine
+```
 
 ## Run
 
