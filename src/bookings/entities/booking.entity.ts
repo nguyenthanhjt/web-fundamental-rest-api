@@ -1,9 +1,18 @@
-export interface Booking 
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity('bookings')
+export class Booking 
 {
-    id: string,
-    serviceId: string,
-    date: string,
-    timeSlot: string,
-    customerName: string,
-    status: string
+    @PrimaryGeneratedColumn()
+    id: number;
+    @Column()
+    serviceId: string;
+    @Column()
+    date: string;
+    @Column()
+    timeSlot: string;
+    @Column()
+    customerName: string;
+    @Column()
+    status: string;
 }

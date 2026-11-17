@@ -8,33 +8,33 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  create(@Body() createBookingDto: CreateBookingDto) {
-    return this.bookingsService.create(createBookingDto);
+  async create(@Body() createBookingDto: CreateBookingDto) {
+    return await this.bookingsService.create(createBookingDto);
   }
 
   @Get()
-  findAll() {
-    return this.bookingsService.findAll();
+  async findAll() {
+    return await this.bookingsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookingsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.bookingsService.findById(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-    return this.bookingsService.update(id, updateBookingDto);
+  async update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
+    return await this.bookingsService.update(id, updateBookingDto);
   }
 
   @Patch(':id')
-  patch(@Param('id') id: string, @Body() patchBookingDto: PatchBookingDto) {
-    return this.bookingsService.patch(id, patchBookingDto);
+  async patch(@Param('id') id: string, @Body() patchBookingDto: PatchBookingDto) {
+    return await this.bookingsService.patch(id, patchBookingDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)  
-  remove(@Param('id') id: string) {
-    return this.bookingsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.bookingsService.remove(id);
   }
 }

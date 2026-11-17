@@ -1,8 +1,16 @@
-export interface Review 
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity('reviews')
+export class Review 
 {
-    id: string;
+    @PrimaryGeneratedColumn()
+    id: number;
+    @Column()
     serviceId: string;
+    @Column()
     authorName: string;
+    @Column()
     rating: number;
-    comment: string | undefined;
+    @Column({nullable: true})
+    comment: string;
 }

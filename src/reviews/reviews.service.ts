@@ -1,58 +1,70 @@
 import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto.js';
 import { UpdateReviewDto, PatchReviewDto } from './dto/update-review.dto.js';
-import { ReviewsRepository } from './reviews.repository.js';
 import { ServicesService } from '../services/services.service.js';
 import { Review } from './entities/review.entity.js';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { parseIdString } from '../utils.js';
 
 @Injectable()
 export class ReviewsService {
-  constructor (private readonly reviewsRepository: ReviewsRepository, @Inject(forwardRef(() => ServicesService)) private readonly servicesService: ServicesService) {}
+  constructor (@InjectRepository(Review) private readonly reviewsRepository: Repository<Review>, @Inject(forwardRef(() => ServicesService)) private readonly servicesService: ServicesService) {}
 
-  private nextReviewNumber: number = 1;
+  private convertToReviewResponse(review: Review) {
+    return {
+      id: 'rvw_' + String(review.id).padStart(3, "0"),
+      serviceId: review.serviceId,
+      authorName: review.authorName,
+      rating: review.rating,
+      comment: review.comment
+    }
+  }
 
-  create(serviceId: string, createReviewDto: CreateReviewDto) {
-    this.servicesService.findOne(serviceId)
-    const review: Review = {
-      id: "rvw_" + String(this.nextReviewNumber).padStart(3, "0"),
+  async create(serviceId: string, createReviewDto: CreateReviewDto) {
+    await this.servicesService.findOne(serviceId)
+    const review: Review = this.reviewsRepository.create({
       serviceId: serviceId,
       authorName: createReviewDto.authorName,
       rating: createReviewDto.rating,
       comment: createReviewDto.comment
-    };
-    this.nextReviewNumber++;
-    return this.reviewsRepository.save(review);
+    });
+    return this.convertToReviewResponse(await this.reviewsRepository.save(review));
   }
 
-  findAll(serviceId: string) {
-    this.servicesService.findOne(serviceId)
-    return this.reviewsRepository.findAll(serviceId);
+  async findAll(serviceId: string) {
+    await this.servicesService.findOne(serviceId)
+    return (await this.reviewsRepository.findBy({serviceId})).map((value) => this.convertToReviewResponse(value));
   }
 
-  findOne(id: string) {
-    const review = this.reviewsRepository.findById(id);
+  async findOne(id: string) {
+    const review = await this.reviewsRepository.findOneBy({id: parseIdString(id)});
     if (!review) 
       throw new NotFoundException("Review not found");
     return review;
   }
 
-  update(id: string, updateReviewDto: UpdateReviewDto) {
-    const review = this.findOne(id);
+  async findById(id: string) {
+    return this.convertToReviewResponse(await this.findOne(id));
+  }
+
+  async update(id: string, updateReviewDto: UpdateReviewDto) {
+    const review = await this.findOne(id);
     review.authorName = updateReviewDto.authorName;
     review.rating = updateReviewDto.rating;
     review.comment = updateReviewDto.comment !== undefined ? updateReviewDto.comment : review.comment;
-    return this.reviewsRepository.save(review);
+    return this.convertToReviewResponse(await this.reviewsRepository.save(review));
   }
 
-  patch(id: string, patchReviewDto: PatchReviewDto) {
-    const review = this.findOne(id);
+  async patch(id: string, patchReviewDto: PatchReviewDto) {
+    const review = await this.findOne(id);
     if (!Object.values(patchReviewDto).some((value) => value !== undefined)) 
       throw new BadRequestException("Empty body");
-    return this.reviewsRepository.save(Object.assign(review, patchReviewDto));
+    return this.convertToReviewResponse(await this.reviewsRepository.save(Object.assign(review, patchReviewDto)));
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.reviewsRepository.delete(id);
+  async remove(id: string) {
+    const review = await this.findOne(id);
+    await this.reviewsRepository.delete(review.id);
   }
 }

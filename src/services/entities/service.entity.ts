@@ -1,7 +1,14 @@
-export interface Service 
+import { Column, Entity, PrimaryColumn } from "typeorm";
+
+@Entity('services')
+export class Service 
 {
-    id: string,
-    name: string,
-    capacity: number,
-    price: number
+    @PrimaryColumn()
+    id: string;
+    @Column()
+    name: string;
+    @Column()
+    capacity: number;
+    @Column()
+    price: number;
 }

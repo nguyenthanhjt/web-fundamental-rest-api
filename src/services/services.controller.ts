@@ -8,22 +8,22 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService, @Inject(forwardRef(() => ReviewsService)) private readonly reviewsService: ReviewsService) {}
 
   @Get('')
-  findAll() {
-    return this.servicesService.findAll();
+  async findAll() {
+    return await this.servicesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.servicesService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.servicesService.findOne(id);
   }
 
   @Get(':serviceId/reviews')
-  findAllReviews(@Param('serviceId') serviceId: string) {
-    return this.reviewsService.findAll(serviceId);
+  async findAllReviews(@Param('serviceId') serviceId: string) {
+    return await this.reviewsService.findAll(serviceId);
   }
 
   @Post(':serviceId/reviews')
-  createReview(@Param('serviceId') serviceId: string, @Body() createReviewDto: CreateReviewDto) {
-    return this.reviewsService.create(serviceId, createReviewDto);
+  async createReview(@Param('serviceId') serviceId: string, @Body() createReviewDto: CreateReviewDto) {
+    return await this.reviewsService.create(serviceId, createReviewDto);
   }
 }

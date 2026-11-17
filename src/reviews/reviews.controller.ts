@@ -7,23 +7,23 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reviewsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.reviewsService.findById(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewsService.update(id, updateReviewDto);
+  async update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
+    return await this.reviewsService.update(id, updateReviewDto);
   }
 
   @Patch(':id')
-  patch(@Param('id') id: string, @Body() updateReviewDto: PatchReviewDto) {
-    return this.reviewsService.patch(id, updateReviewDto);
+  async patch(@Param('id') id: string, @Body() updateReviewDto: PatchReviewDto) {
+    return await this.reviewsService.patch(id, updateReviewDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.reviewsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.reviewsService.remove(id);
   }
 }
