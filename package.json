@@ -2,12 +2,34 @@
   "name": "technovas-2026-course-03-booking-demo",
   "version": "1.0.0",
   "private": true,
-  "description": "TechNovas 2026 course 3 demo: in-memory Booking API on Express",
-  "main": "src/server.js",
+  "description": "NestJS Booking API with stateless JWT authentication and resource authorization",
+  "main": "dist/main.js",
   "scripts": {
-    "start": "node src/server.js"
+    "build": "tsc",
+    "start": "npm run build && node --env-file-if-exists=.env dist/main.js",
+    "start:dev": "npm start",
+    "test": "npm run build && node --test test/*.test.cjs"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "@nestjs/common": "^12.5.0",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.5.0",
+    "@nestjs/jwt": "^12.0.5",
+    "@nestjs/passport": "^12.0.2",
+    "@nestjs/platform-express": "^12.5.0",
+    "@nestjs/throttler": "^6.8.0",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "express": "^4.21.2",
+    "helmet": "^8.3.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^26.6.6",
+    "@types/passport-jwt": "^4.0.1",
+    "typescript": "^7.0.2"
   }
 }
