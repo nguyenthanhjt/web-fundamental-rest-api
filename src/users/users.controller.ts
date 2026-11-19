@@ -8,12 +8,8 @@ import { CurrentUser } from '@nestjs/authentication';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  private convertToUserResponse(user: User) {
-    return Object.assign(new UserResponseDto(), user);
-  }
-
   @Get()
   async findOne(@CurrentUser() user: User) {
-    return this.convertToUserResponse(await this.usersService.findOne(user.id));
+    return this.usersService.convertToUserResponse(await this.usersService.findOne(user.id));
   }
 }

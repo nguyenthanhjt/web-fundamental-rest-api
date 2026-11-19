@@ -5,11 +5,20 @@ import { Repository } from 'typeorm';
 import { isNumber } from 'class-validator';
 import { error } from 'console';
 import { PasswordHasher } from '@nestjs/authentication';
+import { UserResponseDto } from './dto/user-response.dto.js';
 
 @Injectable()
 export class UsersService 
 {
     constructor(@InjectRepository(User) private readonly usersRepo: Repository<User>, private readonly passwordHasher: PasswordHasher) {}
+    
+    convertToUserResponse(user: User): UserResponseDto {
+        return {
+            id: 'usr_' + user.id.toString(),
+            name: user.name,
+            email: user.email,
+        };
+    }
 
     async findOne(id: number) {
         const user = await this.usersRepo.findOneBy({id});
@@ -43,6 +52,6 @@ export class UsersService
             hashPassword
         });
 
-        return await this.usersRepo.save(newUser);
+        return (await this.usersRepo.save(newUser));
     }
 }

@@ -11,27 +11,27 @@ export class BookingsController {
 
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto, @CurrentUser() user: User) {
-    return await this.bookingsService.create(createBookingDto, user.id);
+    return this.bookingsService.convertToBookingResponse(await this.bookingsService.create(createBookingDto, user.id));
   }
 
   @Get()
   async findAll(@CurrentUser() user: User) {
-    return await this.bookingsService.findAll(user.id);
+    return (await this.bookingsService.findAll(user.id)).map((value) => this.bookingsService.convertToBookingResponse(value));
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    return await this.bookingsService.findById(id, user.id);
+    return this.bookingsService.convertToBookingResponse(await this.bookingsService.findOne(id, user.id));
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto, @CurrentUser() user: User) {
-    return await this.bookingsService.update(id, updateBookingDto, user.id);
+    return this.bookingsService.convertToBookingResponse(await this.bookingsService.update(id, updateBookingDto, user.id));
   }
 
   @Patch(':id')
   async patch(@Param('id') id: string, @Body() patchBookingDto: PatchBookingDto, @CurrentUser() user: User) {
-    return await this.bookingsService.patch(id, patchBookingDto, user.id);
+    return this.bookingsService.convertToBookingResponse(await this.bookingsService.patch(id, patchBookingDto, user.id));
   }
 
   @Delete(':id')

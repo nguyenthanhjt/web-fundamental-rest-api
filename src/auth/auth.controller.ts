@@ -17,14 +17,14 @@ export class AuthController {
   }
 
   @Post('sign-up')
-  @HttpCode(200)
+  @HttpCode(201)
   async signUp(@Body() body: SignUpDto) {
-    return await this.usersService.createUser(body.name, body.email, body.password);
+    return this.usersService.convertToUserResponse(await this.usersService.createUser(body.name, body.email, body.password));
   }
 
   @Post('refresh')
   @HttpCode(200)
-  async refreshToken(@Body() refreshToken: string) {
+  async refreshToken(@Body('refreshToken') refreshToken: string) {
     return await this.authService.refreshToken(refreshToken);
   }
 }

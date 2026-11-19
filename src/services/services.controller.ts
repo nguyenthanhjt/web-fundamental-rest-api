@@ -24,11 +24,11 @@ export class ServicesController {
   @Public()
   @Get(':serviceId/reviews')
   async findAllReviews(@Param('serviceId') serviceId: string) {
-    return await this.reviewsService.findAll(serviceId);
+    return (await this.reviewsService.findAll(serviceId)).map((value) => this.reviewsService.convertToReviewResponse(value));
   }
 
   @Post(':serviceId/reviews')
   async createReview(@Param('serviceId') serviceId: string, @Body() createReviewDto: CreateReviewDto, @CurrentUser() user: User) {
-    return await this.reviewsService.create(serviceId, createReviewDto, user.id);
+    return this.reviewsService.convertToReviewResponse(await this.reviewsService.create(serviceId, createReviewDto, user.id));
   }
 }

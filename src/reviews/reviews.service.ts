@@ -11,7 +11,7 @@ import { parseIdString } from '../utils.js';
 export class ReviewsService {
   constructor (@InjectRepository(Review) private readonly reviewsRepository: Repository<Review>, @Inject(forwardRef(() => ServicesService)) private readonly servicesService: ServicesService) {}
 
-  private convertToReviewResponse(review: Review) {
+  convertToReviewResponse(review: Review) {
     return {
       id: 'rvw_' + String(review.id).padStart(3, "0"),
       serviceId: review.serviceId,
@@ -29,12 +29,12 @@ export class ReviewsService {
       rating: createReviewDto.rating,
       comment: createReviewDto.comment
     });
-    return this.convertToReviewResponse(await this.reviewsRepository.save(review));
+    return await this.reviewsRepository.save(review);
   }
 
   async findAll(serviceId: string) {
     await this.servicesService.findOne(serviceId)
-    return (await this.reviewsRepository.find({where: {serviceId}, relations: {author: true}})).map((value) => this.convertToReviewResponse(value));
+    return (await this.reviewsRepository.find({where: {serviceId}, relations: {author: true}}));
   }
 
   async findOne(id: string) {
@@ -44,17 +44,13 @@ export class ReviewsService {
     return review;
   }
 
-  async findById(id: string) {
-    return this.convertToReviewResponse(await this.findOne(id));
-  }
-
   async update(id: string, updateReviewDto: UpdateReviewDto, authorId: number) {
     const review = await this.findOne(id);
     if (authorId !== review.authorId)
       throw new ForbiddenException();
     review.rating = updateReviewDto.rating;
     review.comment = updateReviewDto.comment !== undefined ? updateReviewDto.comment : review.comment;
-    return this.convertToReviewResponse(await this.reviewsRepository.save(review));
+    return (await this.reviewsRepository.save(review));
   }
 
   async patch(id: string, patchReviewDto: PatchReviewDto, authorId: number) {
@@ -63,7 +59,7 @@ export class ReviewsService {
       throw new ForbiddenException();
     if (!Object.values(patchReviewDto).some((value) => value !== undefined)) 
       throw new BadRequestException("Empty body");
-    return this.convertToReviewResponse(await this.reviewsRepository.save(Object.assign(review, patchReviewDto)));
+    return await this.reviewsRepository.save(Object.assign(review, patchReviewDto));
   }
 
   async remove(id: string, authorId: number) {

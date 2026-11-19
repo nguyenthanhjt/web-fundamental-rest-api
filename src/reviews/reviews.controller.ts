@@ -11,17 +11,17 @@ export class ReviewsController {
   @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.reviewsService.findById(id);
+    return this.reviewsService.convertToReviewResponse(await this.reviewsService.findOne(id));
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto, @CurrentUser() user: User) {
-    return await this.reviewsService.update(id, updateReviewDto, user.id);
+    return this.reviewsService.convertToReviewResponse(await this.reviewsService.update(id, updateReviewDto, user.id));
   }
 
   @Patch(':id')
   async patch(@Param('id') id: string, @Body() updateReviewDto: PatchReviewDto, @CurrentUser() user: User) {
-    return await this.reviewsService.patch(id, updateReviewDto, user.id);
+    return this.reviewsService.convertToReviewResponse(await this.reviewsService.patch(id, updateReviewDto, user.id));
   }
 
   @Delete(':id')

@@ -13,7 +13,7 @@ import { parseIdString } from '../utils.js';
 export class BookingsService {
   constructor (@InjectRepository(Booking) private bookingsRepository: Repository<Booking>, private servicesService: ServicesService) {}
 
-  private convertToBookingResponse(booking: Booking) {
+  convertToBookingResponse(booking: Booking) {
     return {
       id: 'bkg_' + String(booking.id).padStart(3, "0"),
       serviceId: booking.serviceId,
@@ -33,11 +33,11 @@ export class BookingsService {
       customerId: customerId,
       status: "PENDING"
     });
-    return this.convertToBookingResponse(await this.bookingsRepository.save(booking));
+    return (await this.bookingsRepository.save(booking));
   }
 
   async findAll(userId: number) {
-    return (await this.bookingsRepository.findBy({customerId: userId})).map((value) => this.convertToBookingResponse(value));
+    return (await this.bookingsRepository.findBy({customerId: userId}));
   }
 
   async findOne(id: string, userId: number) {
@@ -50,18 +50,13 @@ export class BookingsService {
     return booking;
   }
 
-  async findById(id: string, userId: number) {
-    const booking = await this.findOne(id, userId);
-    return this.convertToBookingResponse(booking);
-  }
-
   async update(id: string, updateBookingDto: UpdateBookingDto, userId: number) {
     const booking = await this.findOne(id, userId);
     await this.servicesService.findOne(updateBookingDto.serviceId)
     booking.serviceId = updateBookingDto.serviceId;
     booking.date = updateBookingDto.date;
     booking.timeSlot = updateBookingDto.timeSlot;
-    return this.convertToBookingResponse(await this.bookingsRepository.save(booking));
+    return (await this.bookingsRepository.save(booking));
   }
 
   async patch(id: string, patchBookingDto: PatchBookingDto, userId: number) {
@@ -70,11 +65,11 @@ export class BookingsService {
       throw new BadRequestException("At least one of serviceId, date, timeSlot, customerName is required");
     if (patchBookingDto.serviceId !== undefined) 
       await this.servicesService.findOne(patchBookingDto.serviceId)
-    return this.convertToBookingResponse(await this.bookingsRepository.save(Object.assign(booking, patchBookingDto)));
+    return (await this.bookingsRepository.save(Object.assign(booking, patchBookingDto)));
   }
 
   async remove(id: string, userId: number) {
-    await this.findOne(id, userId);
-    await this.bookingsRepository.delete(id);
+    const booking = await this.findOne(id, userId);
+    await this.bookingsRepository.delete(booking.id);
   }
 }

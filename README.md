@@ -85,7 +85,7 @@ Authorization: Bearer <your_access_token>
 
 | Method | Path | Quyền | Body | Phản hồi thành công | Lỗi |
 |:---|:---|:---|:---|:---|:---|
-| `POST` | `/api/v1/auth/sign-up` | Public | `{ "name": string, "email": string, "password": string }` | `200 OK` - Trả về user info | `400` email trùng / sai định dạng |
+| `POST` | `/api/v1/auth/sign-up` | Public | `{ "name": string, "email": string, "password": string }` | `201 Created` - Trả về user info | `400` email trùng / sai định dạng |
 | `POST` | `/api/v1/auth/sign-in` | Public | `{ "email": string, "password": string }` | `200 OK` - `{ accessToken, expiresIn, refreshToken }` | `400` sai email hoặc mật khẩu |
 | `POST` | `/api/v1/auth/refresh` | Public | `{ "refreshToken": string }` (chuỗi token) | `200 OK` - Cặp token mới | `400` / `401` token không hợp lệ hoặc hết hạn |
 

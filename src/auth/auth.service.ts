@@ -8,9 +8,9 @@ export class AuthService
     constructor(private readonly usersService: UsersService, private readonly tokenService: TokenService, private readonly passwordHasher: PasswordHasher) {}
 
     async signIn(email: string, password: string) {
-        const user = await this.usersService.findOneByEmail(email);
+        const user = await this.usersService.findOneByEmail(email).catch(() => null);
 
-        const passwordVerify = await this.passwordHasher.verify(password, (await this.usersService.findOneByEmail(email))?.hashPassword);
+        const passwordVerify = await this.passwordHasher.verify(password, user?.hashPassword);
 
         if (!user || !passwordVerify)
             throw new BadRequestException('Wrong credentials');
