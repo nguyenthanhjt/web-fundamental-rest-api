@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto.js';
 import { PatchBookingDto, UpdateBookingDto } from './dto/update-booking.dto.js';
 import { ServicesService } from '../services/services.service.js';
@@ -19,51 +19,53 @@ export class BookingsService {
       serviceId: booking.serviceId,
       date: booking.date,
       timeSlot: booking.timeSlot,
-      customerName: booking.customerName,
+      customerId: booking.customerId,
       status: booking.status
     }
   }
 
-  async create(createBookingDto: CreateBookingDto) {
+  async create(createBookingDto: CreateBookingDto, customerId: number) {
     await this.servicesService.findOne(createBookingDto.serviceId)
     const booking: Booking = this.bookingsRepository.create({
       serviceId: createBookingDto.serviceId,
       date: createBookingDto.date,
       timeSlot: createBookingDto.timeSlot,
-      customerName: createBookingDto.customerName,
+      customerId: customerId,
       status: "PENDING"
     });
     return this.convertToBookingResponse(await this.bookingsRepository.save(booking));
   }
 
-  async findAll() {
-    return (await this.bookingsRepository.find()).map((value) => this.convertToBookingResponse(value));
+  async findAll(userId: number) {
+    return (await this.bookingsRepository.findBy({customerId: userId})).map((value) => this.convertToBookingResponse(value));
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: number) {
     const booking = await this.bookingsRepository.findOneBy({id: parseIdString(id)})
     if (!booking) {
       throw new NotFoundException("Booking not found");
     }
+    if (booking.customerId !== userId)
+      throw new ForbiddenException();
     return booking;
   }
 
-  async findById(id: string) {
-    return this.convertToBookingResponse(await this.findOne(id));
+  async findById(id: string, userId: number) {
+    const booking = await this.findOne(id, userId);
+    return this.convertToBookingResponse(booking);
   }
 
-  async update(id: string, updateBookingDto: UpdateBookingDto) {
-    const booking = await this.findOne(id);
+  async update(id: string, updateBookingDto: UpdateBookingDto, userId: number) {
+    const booking = await this.findOne(id, userId);
     await this.servicesService.findOne(updateBookingDto.serviceId)
     booking.serviceId = updateBookingDto.serviceId;
     booking.date = updateBookingDto.date;
     booking.timeSlot = updateBookingDto.timeSlot;
-    booking.customerName = updateBookingDto.customerName;
     return this.convertToBookingResponse(await this.bookingsRepository.save(booking));
   }
 
-  async patch(id: string, patchBookingDto: PatchBookingDto) {
-    const booking = await this.findOne(id);
+  async patch(id: string, patchBookingDto: PatchBookingDto, userId: number) {
+    const booking = await this.findOne(id, userId);
     if (!Object.values(patchBookingDto).some((value) => value !== undefined)) 
       throw new BadRequestException("At least one of serviceId, date, timeSlot, customerName is required");
     if (patchBookingDto.serviceId !== undefined) 
@@ -71,8 +73,8 @@ export class BookingsService {
     return this.convertToBookingResponse(await this.bookingsRepository.save(Object.assign(booking, patchBookingDto)));
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, userId: number) {
+    await this.findOne(id, userId);
     await this.bookingsRepository.delete(id);
   }
 }

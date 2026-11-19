@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "../../users/entity/users.entity.js";
 
 @Entity('bookings')
 export class Booking 
@@ -12,7 +13,10 @@ export class Booking
     @Column()
     timeSlot: string;
     @Column()
-    customerName: string;
+    customerId: number;
     @Column()
     status: string;
+    @ManyToOne(() => User)
+    @JoinColumn({name: 'customerId'})
+    customer: User;
 }

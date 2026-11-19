@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service.js';
-import { JwtProvider } from './jwt.provider.js';
 import { PasswordHasher, TokenService } from '@nestjs/authentication';
 
 @Injectable()

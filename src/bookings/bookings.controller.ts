@@ -2,39 +2,41 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpStatus, Htt
 import { BookingsService } from './bookings.service.js';
 import { CreateBookingDto } from './dto/create-booking.dto.js';
 import { PatchBookingDto, UpdateBookingDto } from './dto/update-booking.dto.js';
+import { CurrentUser } from '@nestjs/authentication';
+import { User } from '../users/entity/users.entity.js';
 
 @Controller('api/v1/bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  async create(@Body() createBookingDto: CreateBookingDto) {
-    return await this.bookingsService.create(createBookingDto);
+  async create(@Body() createBookingDto: CreateBookingDto, @CurrentUser() user: User) {
+    return await this.bookingsService.create(createBookingDto, user.id);
   }
 
   @Get()
-  async findAll() {
-    return await this.bookingsService.findAll();
+  async findAll(@CurrentUser() user: User) {
+    return await this.bookingsService.findAll(user.id);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.bookingsService.findById(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    return await this.bookingsService.findById(id, user.id);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-    return await this.bookingsService.update(id, updateBookingDto);
+  async update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto, @CurrentUser() user: User) {
+    return await this.bookingsService.update(id, updateBookingDto, user.id);
   }
 
   @Patch(':id')
-  async patch(@Param('id') id: string, @Body() patchBookingDto: PatchBookingDto) {
-    return await this.bookingsService.patch(id, patchBookingDto);
+  async patch(@Param('id') id: string, @Body() patchBookingDto: PatchBookingDto, @CurrentUser() user: User) {
+    return await this.bookingsService.patch(id, patchBookingDto, user.id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)  
-  async remove(@Param('id') id: string) {
-    await this.bookingsService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: User) {
+    await this.bookingsService.remove(id, user.id);
   }
 }
