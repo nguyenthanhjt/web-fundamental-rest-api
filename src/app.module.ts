@@ -6,9 +6,11 @@ import { BookingsModule } from './bookings/bookings.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dbConfig } from './database/db.config.js';
+import { AuthModule } from './auth/auth.module.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
-  imports: [ServicesModule, BookingsModule, ReviewsModule, TypeOrmModule.forRoot({ ...dbConfig, logging: true, autoLoadEntities: true})],
+  imports: [ServicesModule, BookingsModule, ReviewsModule, TypeOrmModule.forRoot({ ...dbConfig, logging: true, autoLoadEntities: true}), AuthModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
