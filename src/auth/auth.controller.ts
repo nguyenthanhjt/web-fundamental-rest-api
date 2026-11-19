@@ -11,11 +11,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService, private readonly usersService: UsersService) {}
 
   @Post('sign-in') 
+  @HttpCode(200)
   async signIn(@Body() body: SignInDto) {
     return await this.authService.signIn(body.email, body.password);
   }
 
   @Post('sign-up')
+  @HttpCode(200)
   async signUp(@Body() body: SignUpDto) {
     return await this.usersService.createUser(body.name, body.email, body.password);
   }
