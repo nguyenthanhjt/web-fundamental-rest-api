@@ -59,3 +59,25 @@ Create-booking body, as on the slide:
 ```
 
 Seed: `svc_001`, `svc_002`.
+
+
+# Homework
+
+## Commands:
+
+```bash
+curl.exe http://localhost:3000/api/v1/services/svc_001/reviews
+curl.exe -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe http://localhost:3000/api/v1/reviews/rev_002
+curl.exe -X PUT http://localhost:3000/api/v1/reviews/rev_002 -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe -i -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-invalid.json"
+curl.exe -i http://localhost:3000/api/v1/services/unknown/reviews
+```
+
+## Answers Part C
+
+1. The review list lives at `/services/:serviceId/reviews` because the reviews belong to a particular service. A single review lives `/reviews/:id` because its unique ID identifies it directly.
+
+2. A successful create returns `201`, a missing `rating` returns `400`, and a service that does not exist returns `404`.
+
+3. Before allowing real users to use this API, I would add authentication to verify who submitted each review, so the system knows who submitted each review and can prevent unauthorized changes or deletions
