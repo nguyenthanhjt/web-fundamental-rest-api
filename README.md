@@ -59,3 +59,103 @@ Create-booking body, as on the slide:
 ```
 
 Seed: `svc_001`, `svc_002`.
+
+
+# Homework
+
+## Commands:
+
+```bash
+curl.exe http://localhost:3000/api/v1/services/svc_001/reviews
+curl.exe -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe http://localhost:3000/api/v1/reviews/rev_002
+curl.exe -X PUT http://localhost:3000/api/v1/reviews/rev_002 -H "Content-Type: application/json" --data-binary "@requests/review-create.json"
+curl.exe -i -X POST http://localhost:3000/api/v1/services/svc_001/reviews -H "Content-Type: application/json" --data-binary "@requests/review-invalid.json"
+curl.exe -i http://localhost:3000/api/v1/services/unknown/reviews
+```
+
+## Answers Part C
+
+1. The review list lives at `/services/:serviceId/reviews` because the reviews belong to a particular service. A single review lives `/reviews/:id` because its unique ID identifies it directly.
+
+2. A successful create returns `201`, a missing `rating` returns `400`, and a service that does not exist returns `404`.
+
+3. Before allowing real users to use this API, I would add authentication to verify who submitted each review, so the system knows who submitted each review and can prevent unauthorized changes or deletions
+
+
+
+## Authentication and Authorization
+
+I use stateless JWT authentication and resource-based authorization.
+
+### Authentication
+
+- `/api/v1/users/register` creates a user with the `USER` role.
+- Passwords are stored as hashes.
+- `/api/v1/auth/login` checks the password and returns a signed JWT access token.
+- Refresh tokens are disabled.
+- Protected endpoints require:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+- `@Public()` allows public read access and public login/registration.
+- `@CurrentUser()` provides the authenticated user to controllers.
+
+### How JWT Works
+
+1. The user registers or logs in.
+2. The server issues a JWT containing the user ID.
+3. The client sends the JWT with protected requests.
+4. The server verifies the signature and loads the current user.
+5. Invalid or missing tokens return `401`.
+
+The server does not store user sessions, making authentication stateless.
+
+### Authorization
+
+The app uses **Attribute-Based Access Control (ABAC)**. A policy allows an operation only after evaluating attributes of the authenticated user and the resource.
+
+User attributes include:
+
+- `role`: `USER` or `ADMIN`
+- `id`: the authenticated user's ID
+
+Resource attributes include:
+
+- `Booking.ownerId`
+- `Review.authorId`
+
+The authorization decision is based on these attributes:
+
+```ts
+return user.role === UserRole.ADMIN ||
+  booking.ownerId === user.id;
+```
+
+```ts
+return user.role === UserRole.ADMIN ||
+  review.authorId === user.id;
+```
+
+Therefore:
+
+- An `ADMIN` can update or delete any booking or review.
+- A normal user can update or delete only resources owned by that user.
+- Another normal user receives `403 Forbidden`.
+
+The ownership attributes are assigned from `@CurrentUser()` on the server. They are excluded from request DTOs, so clients cannot set or change `ownerId` or `authorId`.
+
+### Why This Method Was Chosen
+
+JWT is suitable for stateless APIs because authentication data travels with each request instead of being stored in server sessions.
+
+ABAC is suitable because each authorization decision combines multiple attributes:
+
+- The user's role and ID.
+- The booking or review owner ID.
+
+A role-only approach would allow every normal user to manage every resource or require a separate role for every owner. Comparing the resource's ownership attribute with the authenticated user's ID prevents one user from modifying another user's resource.
+
+The application validates permission in the service after loading the real resource, before changing or deleting it.

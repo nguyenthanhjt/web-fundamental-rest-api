@@ -11,6 +11,9 @@ const services = [
 const bookings = [];
 let nextBookingNumber = 1;
 
+const reviews = [];
+let nextReviewNumber = 1;
+
 const writableFields = ["serviceId", "date", "timeSlot", "customerName"];
 
 function findService(id) {
@@ -132,6 +135,147 @@ app.delete("/api/v1/bookings/:id", (req, res) => {
 });
 
 const port = 3000;
+
+function findReview(id) {
+  return reviews.find((item) => item.id === id);
+}
+
+function valitateReviewBody(body, requiredAllFields) {
+  const fields = ["authorName", "rating", "comment"];
+
+  if (requiredAllFields && fields.some((field) => !Object.prototype.hasOwnProperty.call(body, field))) {
+    return "authorName, rating, comment are required";
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "authorName") && typeof body.authorName !== "string") {
+    return "authorName must be a string";
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "rating") && (typeof body.rating !== "number" || body.rating < 1 || body.rating > 5)) {
+    return "rating must be a number between 1 and 5";
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "comment") && typeof body.comment !== "string") {
+    return "comment must be a string";
+  }
+
+  return null;
+}
+
+app.get("/api/v1/services/:serviceId/reviews", (req, res) => {
+  if (!findService(req.params.serviceId)) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  res.status(200).json(reviews.filter((review) => review.serviceId === req.params.serviceId));
+});
+
+app.post("/api/v1/services/:serviceId/reviews", (req, res) => {
+  if (!findService(req.params.serviceId)) {
+    res.status(404).json({ message: "Service not found" });
+    return;
+  }
+
+  const body = req.body || {};
+  const error = valitateReviewBody(body, true);
+
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  const review = {
+    id: "rev_" + String(nextReviewNumber).padStart(3, "0"),
+    serviceId: req.params.serviceId,
+    authorName: body.authorName,
+    rating: body.rating,
+    comment: body.comment
+  };
+  nextReviewNumber += 1;
+  reviews.push(review);
+  res.status(201).json(review);
+});
+
+app.get("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  res.status(200).json(review);
+});
+
+app.put("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  const body = req.body || {};
+  const error = valitateReviewBody(body, true);
+
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  review.authorName = body.authorName;
+  review.rating = body.rating;
+  review.comment = body.comment;
+
+  res.status(200).json(review);
+});
+
+app.patch("/api/v1/reviews/:id", (req, res) => {
+  const review = findReview(req.params.id);
+
+  if (!review) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  const body = req.body || {};
+
+  if (Object.keys(body).length === 0) {
+    if (Object.keys(body).length === 0) {
+      res.status(400).json({ message: "At least one of authorName, rating, comment is required" });
+      return;
+    }
+  }
+
+  const error = valitateReviewBody(body, false);
+
+  if (error) {
+    res.status(400).json({ message: error });
+    return;
+  }
+
+  ["authorName", "rating", "comment"].forEach((field) => {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      review[field] = body[field];
+    }
+  });
+
+  res.status(200).json(review);
+});
+
+app.delete("/api/v1/reviews/:id", (req, res) => {
+  const index = reviews.findIndex((item) => item.id === req.params.id);
+
+  if (index === -1) {
+    res.status(404).json({ message: "Review not found" });
+    return;
+  }
+
+  reviews.splice(index, 1);
+  res.status(204).send();
+});
+
 app.listen(port, () => {
   console.log("Booking demo listening on http://localhost:" + port);
 });
