@@ -11,6 +11,9 @@ import {
   Put,
   Param,
 } from '@nestjs/common';
+import { Public } from '@nestjs/authentication';
+import { Can } from '@nestjs/authorization';
+import { ReviewPolicy } from '../auth/policies';
 import { Review } from './review.model';
 import { ReviewService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -22,11 +25,13 @@ export class ServiceReviewsController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Get()
+  @Public()
   findForService(@Param('serviceId') serviceId: string): Review[] {
     return this.reviewService.findForService(serviceId);
   }
 
   @Post()
+  @Can(ReviewPolicy, 'write')
   create(
     @Param('serviceId') serviceId: string,
     @Body() body: CreateReviewDto,
@@ -40,11 +45,13 @@ export class ReviewsController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string): Review {
     return this.reviewService.findOne(id);
   }
 
   @Put(':id')
+  @Can(ReviewPolicy, 'write')
   replace(
     @Param('id') id: string,
     @Body() body: ReplaceReviewDto,
@@ -53,6 +60,7 @@ export class ReviewsController {
   }
 
   @Patch(':id')
+  @Can(ReviewPolicy, 'write')
   update(
     @Param('id') id: string,
     @Body() body: UpdateReviewDto,
@@ -71,6 +79,7 @@ export class ReviewsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Can(ReviewPolicy, 'delete')
   remove(@Param('id') id: string): void {
     this.reviewService.remove(id);
   }
